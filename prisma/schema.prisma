@@ -22,6 +22,7 @@ model User {
   connectedAccounts ConnectedAccount[]
   s3StorageConfigs S3StorageConfig[]
   files          File[]
+  mirroredFiles  MirroredFile[]
   fileShares     FileShare[]
   filePreviewTokens FilePreviewToken[]
   folders        Folder[]
@@ -154,6 +155,7 @@ model ConnectedAccount {
   providerConfig        ProviderConfig? @relation(fields: [providerConfigId], references: [id], onDelete: NoAction, onUpdate: NoAction)
   storageAccount        StorageAccount?
   files                 File[]
+  mirroredFiles         MirroredFile[]
   folders               Folder[]
   uploadSessions        UploadSession[]
   s3StorageConfig       S3StorageConfig?
@@ -232,6 +234,35 @@ model File {
   @@index([folderId])
   @@index([providerFileId])
   @@map("files")
+}
+
+model MirroredFile {
+  id                 String           @id @default(auto()) @map("_id") @db.ObjectId
+  userId             String           @map("user_id") @db.ObjectId
+  connectedAccountId String           @map("connected_account_id") @db.ObjectId
+  provider           String           @default("google_drive")
+  providerFileId     String           @map("provider_file_id")
+  name               String
+  mimeType           String           @map("mime_type")
+  sizeBytes          BigInt           @default(0) @map("size_bytes")
+  ownerName          String?          @map("owner_name")
+  ownerEmail         String?          @map("owner_email")
+  webViewLink        String?          @map("web_view_link")
+  sharedAt           DateTime?        @map("shared_at")
+  sharedWithMe       Boolean          @default(false) @map("shared_with_me")
+  starred            Boolean          @default(false)
+  status             String           @default("active")
+  deletedAt          DateTime?        @map("deleted_at")
+  createdAt          DateTime         @default(now()) @map("created_at")
+  updatedAt          DateTime         @updatedAt @map("updated_at")
+  user               User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  connectedAccount   ConnectedAccount @relation(fields: [connectedAccountId], references: [id], onDelete: Cascade)
+
+  @@unique([connectedAccountId, providerFileId])
+  @@index([userId, status])
+  @@index([userId, status, sharedWithMe])
+  @@index([userId, status, starred])
+  @@map("mirrored_files")
 }
 
 model FileShare {

@@ -2,16 +2,12 @@ import { google } from 'googleapis'
 import type { ConnectedAccount, ProviderConfig } from '@prisma/client'
 import { prisma } from './prisma'
 import { decryptText, encryptText } from './crypto'
+import { scopeListHasReadonly, toMirroredFileData, type MirroredFileData } from './shared-files'
 
 const googleDriveFolderMimeType = 'application/vnd.google-apps.folder'
 const appFolderName = 'omnidrive'
 
-export const GOOGLE_SCOPES = [
-  'openid',
-  'https://www.googleapis.com/auth/userinfo.email',
-  'https://www.googleapis.com/auth/userinfo.profile',
-  'https://www.googleapis.com/auth/drive.file',
-]
+export { GOOGLE_SCOPES } from './shared-files'
 
 export function createOAuthClient(config: ProviderConfig) {
   return new google.auth.OAuth2(decryptText(config.clientIdEncrypted), decryptText(config.clientSecretEncrypted), config.redirectUri)
@@ -198,6 +194,95 @@ export async function syncGoogleAppFolderFiles(accountId: string, userId: string
 
   await syncGoogleQuota(account.id).catch(() => undefined)
   return { accountId: account.id, created, updated, deleted }
+}
+
+export type SharedSyncResult = {
+  accountId: string
+  created: number
+  updated: number
+  deleted: number
+  skipped?: 'scope'
+  error?: string
+}
+
+type MirrorFlag = 'sharedWithMe' | 'starred'
+
+async function syncMirroredDriveFiles(accountId: string, userId: string, q: string, flag: MirrorFlag): Promise<SharedSyncResult> {
+  const account = await prisma.connectedAccount.findFirstOrThrow({ where: { id: accountId, userId, provider: 'google_drive', status: 'connected' } })
+  if (!scopeListHasReadonly(account.scopes)) {
+    return { accountId: account.id, created: 0, updated: 0, deleted: 0, skipped: 'scope' }
+  }
+
+  const mirrored: MirroredFileData[] = []
+  let pageToken: string | undefined
+
+  try {
+    const auth = await getAuthedGoogleClient(account)
+    const drive = google.drive({ version: 'v3', auth })
+    do {
+      const response = await drive.files.list({
+        q,
+        spaces: 'drive',
+        fields: 'nextPageToken,files(id,name,mimeType,size,owners(displayName,emailAddress),webViewLink,createdTime,sharedWithMeTime)',
+        pageSize: 1000,
+        pageToken,
+      })
+      for (const file of response.data.files ?? []) {
+        const data = toMirroredFileData(file)
+        if (data) mirrored.push(data)
+      }
+      pageToken = response.data.nextPageToken ?? undefined
+    } while (pageToken)
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error)
+    await prisma.connectedAccount.update({ where: { id: account.id }, data: { lastError: message } }).catch(() => undefined)
+    throw error
+  }
+
+  const existingFiles = await prisma.mirroredFile.findMany({ where: { connectedAccountId: account.id } })
+  const existingByProviderId = new Map(existingFiles.map((file) => [file.providerFileId, file]))
+  const driveFileIds = new Set(mirrored.map((file) => file.providerFileId))
+  let created = 0
+  let updated = 0
+  let deleted = 0
+
+  for (const data of mirrored) {
+    const existing = existingByProviderId.get(data.providerFileId)
+    if (!existing) {
+      await prisma.mirroredFile.create({
+        data: { userId, connectedAccountId: account.id, provider: 'google_drive', status: 'active', sharedWithMe: flag === 'sharedWithMe', starred: flag === 'starred', ...data },
+      })
+      created += 1
+      continue
+    }
+
+    const needsUpdate = existing.name !== data.name || existing.mimeType !== data.mimeType || existing.sizeBytes !== data.sizeBytes || existing.ownerName !== data.ownerName || existing.ownerEmail !== data.ownerEmail || existing.webViewLink !== data.webViewLink || existing.sharedAt?.getTime() !== data.sharedAt?.getTime() || existing.status !== 'active' || existing.deletedAt !== null || !existing[flag]
+    if (needsUpdate) {
+      await prisma.mirroredFile.update({
+        where: { id: existing.id },
+        data: { ...data, [flag]: true, status: 'active', deletedAt: null },
+      })
+      updated += 1
+    }
+  }
+
+  const missingIds = existingFiles.filter((file) => file.status === 'active' && file[flag] && !driveFileIds.has(file.providerFileId)).map((file) => file.id)
+  if (missingIds.length > 0) {
+    await prisma.mirroredFile.updateMany({ where: { id: { in: missingIds } }, data: { [flag]: false } })
+    const result = await prisma.mirroredFile.updateMany({ where: { id: { in: missingIds }, sharedWithMe: false, starred: false }, data: { status: 'deleted', deletedAt: new Date() } })
+    updated += missingIds.length - result.count
+    deleted = result.count
+  }
+
+  return { accountId: account.id, created, updated, deleted }
+}
+
+export function syncGoogleSharedFiles(accountId: string, userId: string): Promise<SharedSyncResult> {
+  return syncMirroredDriveFiles(accountId, userId, `sharedWithMe and trashed = false and mimeType != '${googleDriveFolderMimeType}'`, 'sharedWithMe')
+}
+
+export function syncGoogleStarredFiles(accountId: string, userId: string): Promise<SharedSyncResult> {
+  return syncMirroredDriveFiles(accountId, userId, `starred = true and trashed = false`, 'starred')
 }
 
 export type GoogleProfile = {

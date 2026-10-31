@@ -1,8 +1,8 @@
 import type { Metadata } from 'next'
-import { Manrope } from 'next/font/google'
+import { Geist } from 'next/font/google'
 import './globals.css'
 
-const manrope = Manrope({ subsets: ['latin'], variable: '--font-manrope' })
+const geist = Geist({ subsets: ['latin'], variable: '--font-geist' })
 
 export const metadata: Metadata = {
   title: 'OmniDrive',
@@ -11,8 +11,8 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en">
-      <body className={manrope.variable}>{children}</body>
+    <html lang="en" className={geist.variable}>
+      <body>{children}</body>
     </html>
   )
 }

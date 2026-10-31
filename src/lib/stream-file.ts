@@ -1,4 +1,5 @@
 import { Readable } from 'node:stream'
+import type { ConnectedAccount } from '@prisma/client'
 import { getAuthedGoogleClient } from './google'
 import { contentDisposition, getS3ObjectStream, type FileWithAccount } from './s3'
 
@@ -25,7 +26,9 @@ export function normalizeHeaders(headers: Headers | Record<string, string>) {
   return headers
 }
 
-async function streamGoogleFile(file: FileWithAccount, range: string | undefined, options: StreamOptions) {
+export type StreamableGoogleFile = { providerFileId: string; mimeType: string; name: string; connectedAccount: ConnectedAccount }
+
+export async function streamGoogleFile(file: StreamableGoogleFile, range: string | undefined, options: StreamOptions) {
   const auth = await getAuthedGoogleClient(file.connectedAccount)
   const headers = normalizeHeaders(await auth.getRequestHeaders())
   const exportTarget = (options.disposition === 'inline' ? googlePreviewExportMimeTypes : googleDownloadExportMimeTypes)[file.mimeType]

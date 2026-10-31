@@ -4,6 +4,7 @@ import { z } from 'zod'
 import { prisma } from '@/lib/prisma'
 import { hashToken } from '@/lib/crypto'
 import { connectGoogleDriveAccount, createOAuthClient, syncGoogleQuota } from '@/lib/google'
+import { grantedScopes } from '@/lib/shared-files'
 
 const querySchema = z.object({ code: z.string(), state: z.string() })
 
@@ -42,7 +43,7 @@ export async function GET(request: Request) {
       providerConfigId: oauthState.providerConfigId,
       profile: { id: providerAccountId, email, name: profile.data.name, picture: profile.data.picture },
       tokens: { access_token: tokens.access_token, refresh_token: tokens.refresh_token, expiry_date: tokens.expiry_date },
-      scopes: oauthState.providerConfig.scopes as string[],
+      scopes: grantedScopes(tokens.scope, oauthState.providerConfig.scopes),
     })
     await prisma.oauthState.update({ where: { id: oauthState.id }, data: { usedAt: new Date() } })
     await syncGoogleQuota(account.id).catch(() => undefined)

@@ -91,25 +91,25 @@ export default function RegisterPage() {
   }
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-slate-50 p-5">
+    <main className="flex min-h-screen items-center justify-center bg-muted p-5">
       <Card className="w-full max-w-md p-6">
         <div className="flex items-center gap-3">
-          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-blue-600 text-white"><HardDrive className="h-6 w-6" /></div>
-          <div><h1 className="text-2xl font-extrabold">Register</h1><p className="text-sm text-slate-500">Create your storage gateway account.</p></div>
+          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-primary text-white"><HardDrive className="h-6 w-6" /></div>
+          <div><h1 className="text-2xl font-semibold">Register</h1><p className="text-sm text-muted-foreground">Create your storage gateway account.</p></div>
         </div>
         <form onSubmit={submit} className="mt-6 grid gap-4">
           <label className="grid gap-2 text-sm font-semibold">Name<Input value={name} onChange={(e) => setName(e.target.value)} required /></label>
           <label className="grid gap-2 text-sm font-semibold">Email<Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required /></label>
           <label className="grid gap-2 text-sm font-semibold">Password<Input type="password" minLength={8} value={password} onChange={(e) => setPassword(e.target.value)} required /></label>
-          {recaptchaSiteKey ? <div className="min-h-[78px] overflow-hidden rounded-xl bg-slate-50 p-2"><div ref={recaptchaRef} /></div> : null}
+          {recaptchaSiteKey ? <div className="min-h-[78px] overflow-hidden rounded-xl bg-muted p-2"><div ref={recaptchaRef} /></div> : null}
           {error ? <p className="rounded-xl bg-red-50 p-3 text-sm text-red-600">{error}</p> : null}
           <Button disabled={loading}>{loading ? 'Creating...' : 'Create Account'}</Button>
         </form>
         <div className="mt-4 grid gap-3">
-          <div className="flex items-center gap-3 text-xs font-semibold uppercase tracking-wide text-slate-400"><span className="h-px flex-1 bg-slate-200" />or<span className="h-px flex-1 bg-slate-200" /></div>
+          <div className="flex items-center gap-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground"><span className="h-px flex-1 bg-muted" />or<span className="h-px flex-1 bg-muted" /></div>
           <Button variant="outline" disabled={googleLoading} onClick={continueWithGoogle}><GoogleLogo />{googleLoading ? 'Redirecting...' : 'Continue with Google and connect Drive'}</Button>
         </div>
-        <p className="mt-5 text-center text-sm text-slate-500">Already registered? <Link className="font-bold text-blue-600" href="/login">Login</Link></p>
+        <p className="mt-5 text-center text-sm text-muted-foreground">Already registered? <Link className="font-bold text-muted-foreground" href="/login">Login</Link></p>
       </Card>
     </main>
   )

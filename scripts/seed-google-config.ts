@@ -27,6 +27,7 @@ async function main() {
     'https://www.googleapis.com/auth/userinfo.email',
     'https://www.googleapis.com/auth/userinfo.profile',
     'https://www.googleapis.com/auth/drive.file',
+    'https://www.googleapis.com/auth/drive.readonly',
   ]
   const existing = await prisma.providerConfig.findFirst({
     where: { user: null, provider: 'google_drive' },

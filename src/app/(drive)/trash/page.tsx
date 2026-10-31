@@ -145,21 +145,21 @@ export default function TrashPage() {
       <Card className="mt-8 overflow-hidden">
         {files.length === 0 ? (
           <div className="flex flex-col items-center justify-center p-12 text-center">
-            <Trash2 className="h-12 w-12 text-slate-400 mb-3" />
+            <Trash2 className="h-12 w-12 text-muted-foreground mb-3" />
             <p className="text-base font-bold">Trash is empty</p>
-            <p className="text-sm text-slate-500 mt-1">Deleted files will appear here.</p>
+            <p className="text-sm text-muted-foreground mt-1">Deleted files will appear here.</p>
           </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="border-b border-slate-200 text-sm font-semibold text-slate-500">
+                <tr className="border-b border-border text-sm font-semibold text-muted-foreground">
                   <th className="p-4 w-12">
                     <input
                       type="checkbox"
                       checked={selectedIds.size === files.length && files.length > 0}
                       onChange={toggleSelectAll}
-                      className="rounded border-slate-300"
+                      className="rounded border-border"
                     />
                   </th>
                   <th className="p-4">Name</th>
@@ -171,28 +171,28 @@ export default function TrashPage() {
               </thead>
               <tbody>
                 {files.map((file) => (
-                  <tr key={file.id} className="border-b border-slate-100 hover:bg-slate-50/50 transition">
+                  <tr key={file.id} className="border-b border-border hover:bg-muted/50 transition">
                     <td className="p-4">
                       <input
                         type="checkbox"
                         checked={selectedIds.has(file.id)}
                         onChange={() => toggleSelect(file.id)}
-                        className="rounded border-slate-300"
+                        className="rounded border-border"
                       />
                     </td>
                     <td className="p-4">
                       <div className="flex items-center gap-3">
-                        <FileText className="h-5 w-5 text-slate-400 shrink-0" />
+                        <FileText className="h-5 w-5 text-muted-foreground shrink-0" />
                         <span className="font-medium truncate max-w-xs sm:max-w-md block" title={file.name}>
                           {file.name}
                         </span>
                       </div>
                     </td>
-                    <td className="p-4 text-sm text-slate-500">
+                    <td className="p-4 text-sm text-muted-foreground">
                       {file.connectedAccount.email} ({file.provider})
                     </td>
                     <td className="p-4 text-sm font-semibold">{formatBytes(file.sizeBytes)}</td>
-                    <td className="p-4 text-sm text-slate-500">
+                    <td className="p-4 text-sm text-muted-foreground">
                       {new Intl.DateTimeFormat('en', { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(file.deletedAt))}
                     </td>
                     <td className="p-4 text-right">

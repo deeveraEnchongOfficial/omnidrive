@@ -4,6 +4,7 @@ import { getAuthUser } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { apiError, handleRouteError } from '@/lib/http'
 import { createOAuthClient } from '@/lib/google'
+import { mergeRequiredScopes } from '@/lib/shared-files'
 import { hashToken, randomToken } from '@/lib/crypto'
 
 export async function createGoogleConnectUrl(userId: string, providerConfigId?: string) {
@@ -17,7 +18,7 @@ export async function createGoogleConnectUrl(userId: string, providerConfigId?: 
     access_type: 'offline',
     prompt: 'consent',
     include_granted_scopes: true,
-    scope: config.scopes as string[],
+    scope: mergeRequiredScopes(config.scopes),
     state,
   })
 }

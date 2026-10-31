@@ -60,7 +60,7 @@ export const archivedFiles: FileItem[] = [
 ]
 
 export const sharedFolders: FolderItem[] = [
-  { name: 'Client References', updated: 'Shared yesterday', color: 'text-blue-500' },
+  { name: 'Client References', updated: 'Shared yesterday', color: 'text-zinc-500' },
   { name: 'Team Contracts', updated: 'Shared 2 days ago', color: 'text-lime-500' },
   { name: 'Design Feedback', updated: 'Shared 3 days ago', color: 'text-orange-500' },
 ]

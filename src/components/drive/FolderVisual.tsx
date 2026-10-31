@@ -3,7 +3,7 @@ import { cn } from '@/lib/utils'
 import type { FolderItem } from '@/lib/drive-data'
 
 const legacyColorMap: Record<string, string> = {
-  'text-blue-500': '#3b82f6',
+  'text-muted-foreground': '#3b82f6',
   'text-lime-500': '#84cc16',
   'text-cyan-400': '#22d3ee',
   'text-yellow-400': '#facc15',

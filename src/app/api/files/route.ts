@@ -21,6 +21,7 @@ export async function GET(request: Request) {
       folderId: z.string().optional(),
       q: z.string().trim().max(255).optional(),
       kind: z.enum(['image', 'video', 'pdf', 'doc', 'archive']).optional(),
+      starred: z.enum(['true', 'false']).optional(),
       accountId: z.string().optional(),
       minSize: z.coerce.number().optional(),
       maxSize: z.coerce.number().optional(),
@@ -36,6 +37,7 @@ export async function GET(request: Request) {
         ...(query.q ? { name: { contains: query.q } } : {}),
         ...(query.accountId ? { connectedAccountId: query.accountId } : {}),
         ...(query.kind ? { mimeType: { in: typeFilters[query.kind] || [] } } : {}),
+        ...(query.starred === 'true' ? { starredAt: { not: null } } : {}),
         ...(query.minSize !== undefined || query.maxSize !== undefined ? {
           sizeBytes: {
             ...(query.minSize !== undefined ? { gte: BigInt(query.minSize) } : {}),

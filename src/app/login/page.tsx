@@ -38,11 +38,11 @@ export default function LoginPage() {
   }
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-slate-50 p-5">
+    <main className="flex min-h-screen items-center justify-center bg-muted p-5">
       <Card className="w-full max-w-md p-6">
         <div className="flex items-center gap-3">
-          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-blue-600 text-white"><HardDrive className="h-6 w-6" /></div>
-          <div><h1 className="text-2xl font-extrabold">Login</h1><p className="text-sm text-slate-500">Access your OmniDrive gateway.</p></div>
+          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-primary text-white"><HardDrive className="h-6 w-6" /></div>
+          <div><h1 className="text-2xl font-semibold">Login</h1><p className="text-sm text-muted-foreground">Access your OmniDrive gateway.</p></div>
         </div>
         <form onSubmit={submit} className="mt-6 grid gap-4">
           <label className="grid gap-2 text-sm font-semibold">Email<Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required /></label>
@@ -51,10 +51,10 @@ export default function LoginPage() {
           <Button disabled={loading}>{loading ? 'Logging in...' : 'Login'}</Button>
         </form>
         <div className="mt-4 grid gap-3">
-          <div className="flex items-center gap-3 text-xs font-semibold uppercase tracking-wide text-slate-400"><span className="h-px flex-1 bg-slate-200" />or<span className="h-px flex-1 bg-slate-200" /></div>
+          <div className="flex items-center gap-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground"><span className="h-px flex-1 bg-muted" />or<span className="h-px flex-1 bg-muted" /></div>
           <Button variant="outline" disabled={googleLoading} onClick={continueWithGoogle}><GoogleLogo />{googleLoading ? 'Redirecting...' : 'Continue with Google'}</Button>
         </div>
-        <p className="mt-5 text-center text-sm text-slate-500">No account? <Link className="font-bold text-blue-600" href="/register">Register</Link></p>
+        <p className="mt-5 text-center text-sm text-muted-foreground">No account? <Link className="font-bold text-muted-foreground" href="/register">Register</Link></p>
       </Card>
     </main>
   )
